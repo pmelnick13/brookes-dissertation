@@ -148,9 +148,6 @@ export default function MethodologyPage() {
             <li>
               A single simulation is only one possible outcome and will change each time it runs.
             </li>
-            <li>
-              Real-world comparisons cover different time periods and circumstances. They are illustrations, not direct predictions.
-            </li>
           </ul>
         </div>
       </section>

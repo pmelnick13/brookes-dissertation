@@ -33,7 +33,6 @@ export default function AboutPage() {
             <li>Explains bookmaker margin in two-outcome markets.</li>
             <li>Saves completed analyses and displays bet history.</li>
             <li>Simulates how repeated bets could affect a balance.</li>
-            <li>Compares very small probabilities with rare real-world events.</li>
           </ul>
         </div>
       </section>
