@@ -4,6 +4,11 @@
 import { useState } from "react";
 
 type SimulationResult = {
+  simulations: number;
+  averageEndingBalance: number;
+  medianEndingBalance: number;
+  bestEndingBalance: number;
+  worstEndingBalance: number;
   endingBalance: number;
   profitOrLoss: number;
   wins: number;
@@ -13,10 +18,11 @@ type SimulationResult = {
 };
 
 export default function MonteCarloSimulator() {
-  // these strings are the five settings shown in the form
+  // these strings are the six settings shown in the form
   const [startingBalance, setStartingBalance] = useState("1000");
   const [stake, setStake] = useState("10");
   const [numberOfBets, setNumberOfBets] = useState("100");
+  const [numberOfSimulations, setNumberOfSimulations] = useState("1000");
   const [winProbability, setWinProbability] = useState("25");
   const [decimalOdds, setDecimalOdds] = useState("3.00");
   // keep the latest run and any validation problem separate
@@ -31,6 +37,7 @@ export default function MonteCarloSimulator() {
     const balanceNumber = Number(startingBalance);
     const stakeNumber = Number(stake);
     const betsNumber = Number(numberOfBets);
+    const simulationsNumber = Number(numberOfSimulations);
     const probabilityNumber = Number(winProbability);
     const oddsNumber = Number(decimalOdds);
 
@@ -59,6 +66,16 @@ export default function MonteCarloSimulator() {
     }
 
     if (
+      !Number.isInteger(simulationsNumber) ||
+      simulationsNumber < 1 ||
+      simulationsNumber > 5000
+    ) {
+      // this gives useful results without making the browser do too much work
+      setError("Number of simulations must be between 1 and 5,000.");
+      return;
+    }
+
+    if (
       !Number.isFinite(probabilityNumber) ||
       probabilityNumber <= 0 ||
       probabilityNumber >= 100
@@ -74,38 +91,76 @@ export default function MonteCarloSimulator() {
       return;
     }
 
-    let currentBalance = balanceNumber;
-    let wins = 0;
-    let losses = 0;
-    const balances = [currentBalance];
+    const endingBalances: number[] = [];
+    let exampleEndingBalance = balanceNumber;
+    let exampleWins = 0;
+    let exampleLosses = 0;
+    let exampleBalances = [balanceNumber];
 
-    // each loop is one bet and stops if the next stake cannot be covered
-    for (let bet = 0; bet < betsNumber; bet += 1) {
-      if (currentBalance < stakeNumber) {
-        break;
+    // run the same betting setup many times so the outcomes can be compared
+    for (let simulation = 0; simulation < simulationsNumber; simulation += 1) {
+      let currentBalance = balanceNumber;
+      let wins = 0;
+      let losses = 0;
+      const balances = [currentBalance];
+
+      // each inner loop is one bet in the current simulation
+      for (let bet = 0; bet < betsNumber; bet += 1) {
+        if (currentBalance < stakeNumber) {
+          break;
+        }
+
+        const betWon = Math.random() < probabilityNumber / 100;
+
+        // wins add profit while losses remove the full stake
+        if (betWon) {
+          currentBalance += stakeNumber * (oddsNumber - 1);
+          wins += 1;
+        } else {
+          currentBalance -= stakeNumber;
+          losses += 1;
+        }
+
+        balances.push(currentBalance);
       }
 
-      const betWon = Math.random() < probabilityNumber / 100;
+      endingBalances.push(currentBalance);
 
-      // wins add profit while losses remove the full stake
-      if (betWon) {
-        currentBalance += stakeNumber * (oddsNumber - 1);
-        wins += 1;
-      } else {
-        currentBalance -= stakeNumber;
-        losses += 1;
+      // keep the first run as the example shown in the line chart
+      if (simulation === 0) {
+        exampleEndingBalance = currentBalance;
+        exampleWins = wins;
+        exampleLosses = losses;
+        exampleBalances = balances;
       }
-
-      balances.push(currentBalance);
     }
 
+    const sortedEndingBalances = [...endingBalances].sort(
+      (first, second) => first - second
+    );
+    const middleIndex = Math.floor(sortedEndingBalances.length / 2);
+    const medianEndingBalance =
+      sortedEndingBalances.length % 2 === 0
+        ? (sortedEndingBalances[middleIndex - 1] +
+            sortedEndingBalances[middleIndex]) /
+          2
+        : sortedEndingBalances[middleIndex];
+    const averageEndingBalance =
+      endingBalances.reduce((total, balance) => total + balance, 0) /
+      endingBalances.length;
+
     setResult({
-      endingBalance: currentBalance,
-      profitOrLoss: currentBalance - balanceNumber,
-      wins,
-      losses,
-      completedBets: wins + losses,
-      balances,
+      simulations: simulationsNumber,
+      averageEndingBalance,
+      medianEndingBalance,
+      bestEndingBalance: Math.max(...endingBalances),
+      worstEndingBalance: Math.min(...endingBalances),
+      endingBalance: exampleEndingBalance,
+      profitOrLoss: exampleEndingBalance - balanceNumber,
+      wins: exampleWins,
+      losses: exampleLosses,
+      completedBets: exampleWins + exampleLosses,
+      balances: exampleBalances,
     });
   }
 
@@ -143,6 +198,16 @@ export default function MonteCarloSimulator() {
                 onChange={setNumberOfBets}
                 min="1"
                 max="1000"
+                step="1"
+              />
+
+              <NumberInput
+                id="number-of-simulations"
+                label="Number of Simulations"
+                value={numberOfSimulations}
+                onChange={setNumberOfSimulations}
+                min="1"
+                max="5000"
                 step="1"
               />
 
@@ -264,6 +329,33 @@ function SimulationResults({ result }: { result: SimulationResult }) {
     <div className="card">
       <div className="card-body">
         <h2 className="h4 mb-4">Simulation Results</h2>
+
+        <p className="text-muted">
+          Summary across {result.simulations.toLocaleString()} simulations
+        </p>
+
+        <div className="row">
+          <ResultItem
+            label="Average Ending Balance"
+            value={`$${result.averageEndingBalance.toFixed(2)}`}
+          />
+          <ResultItem
+            label="Median Ending Balance"
+            value={`$${result.medianEndingBalance.toFixed(2)}`}
+          />
+          <ResultItem
+            label="Best Ending Balance"
+            value={`$${result.bestEndingBalance.toFixed(2)}`}
+          />
+          <ResultItem
+            label="Worst Ending Balance"
+            value={`$${result.worstEndingBalance.toFixed(2)}`}
+          />
+        </div>
+
+        <hr />
+
+        <h3 className="h5">Example Simulation</h3>
 
         <div className="row">
           <ResultItem label="Ending Balance" value={`$${result.endingBalance.toFixed(2)}`} />
