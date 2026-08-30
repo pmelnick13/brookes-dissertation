@@ -1,3 +1,4 @@
+// this runs repeated bets and draws the balance as it changes
 "use client";
 
 import { useState } from "react";
@@ -12,15 +13,18 @@ type SimulationResult = {
 };
 
 export default function MonteCarloSimulator() {
+  // these strings are the five settings shown in the form
   const [startingBalance, setStartingBalance] = useState("1000");
   const [stake, setStake] = useState("10");
   const [numberOfBets, setNumberOfBets] = useState("100");
   const [winProbability, setWinProbability] = useState("25");
   const [decimalOdds, setDecimalOdds] = useState("3.00");
+  // keep the latest run and any validation problem separate
   const [result, setResult] = useState<SimulationResult | null>(null);
   const [error, setError] = useState("");
 
   function runSimulation(event: React.SubmitEvent<HTMLFormElement>) {
+    // turn the form values into numbers before doing any random runs
     event.preventDefault();
     setError("");
 
@@ -31,21 +35,25 @@ export default function MonteCarloSimulator() {
     const oddsNumber = Number(decimalOdds);
 
     if (!Number.isFinite(balanceNumber) || balanceNumber <= 0) {
+      // the simulation needs some money to start with
       setError("Starting balance must be greater than 0.");
       return;
     }
 
     if (!Number.isFinite(stakeNumber) || stakeNumber <= 0) {
+      // each bet needs a real positive stake
       setError("Stake must be greater than 0.");
       return;
     }
 
     if (stakeNumber > balanceNumber) {
+      // the very first bet has to be affordable
       setError("Stake cannot be greater than the starting balance.");
       return;
     }
 
     if (!Number.isInteger(betsNumber) || betsNumber < 1 || betsNumber > 1000) {
+      // the limit keeps the browser from doing silly amounts of work
       setError("Number of bets must be between 1 and 1,000.");
       return;
     }
@@ -55,11 +63,13 @@ export default function MonteCarloSimulator() {
       probabilityNumber <= 0 ||
       probabilityNumber >= 100
     ) {
+      // zero and 100 would remove all randomness from the run
       setError("Win probability must be between 0 and 100.");
       return;
     }
 
     if (!Number.isFinite(oddsNumber) || oddsNumber <= 1) {
+      // decimal odds have to return more than the original stake
       setError("Decimal odds must be greater than 1.");
       return;
     }
@@ -69,6 +79,7 @@ export default function MonteCarloSimulator() {
     let losses = 0;
     const balances = [currentBalance];
 
+    // each loop is one bet and stops if the next stake cannot be covered
     for (let bet = 0; bet < betsNumber; bet += 1) {
       if (currentBalance < stakeNumber) {
         break;
@@ -76,6 +87,7 @@ export default function MonteCarloSimulator() {
 
       const betWon = Math.random() < probabilityNumber / 100;
 
+      // wins add profit while losses remove the full stake
       if (betWon) {
         currentBalance += stakeNumber * (oddsNumber - 1);
         wins += 1;
@@ -104,6 +116,7 @@ export default function MonteCarloSimulator() {
           <div className="card-body">
             <h2 className="h4 mb-4">Simulation Settings</h2>
 
+            {/* each setting uses the same small number input component */}
             <form onSubmit={runSimulation}>
               <NumberInput
                 id="starting-balance"
@@ -152,6 +165,7 @@ export default function MonteCarloSimulator() {
                 step="0.01"
               />
 
+              {/* show the first validation problem beside the form */}
               {error && (
                 <div className="alert alert-danger">
                   {error}
@@ -167,6 +181,7 @@ export default function MonteCarloSimulator() {
       </div>
 
       <div className="col-lg-7">
+        {/* swap the instructions for results after the first run */}
         {result ? (
           <SimulationResults result={result} />
         ) : (
@@ -198,6 +213,7 @@ function NumberInput({
   max,
   step,
 }: NumberInputProps) {
+  // pass the browser's string value back to the matching state setter
   return (
     <div className="mb-3">
       <label htmlFor={id} className="form-label">
@@ -227,6 +243,7 @@ function SimulationResults({ result }: { result: SimulationResult }) {
   const lowestBalance = Math.min(...result.balances);
   const balanceRange = highestBalance - lowestBalance || 1;
 
+  // these points turn the balance history into a simple svg line
   const chartPoints = result.balances
     .map((balance, index) => {
       const x =

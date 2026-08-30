@@ -1,3 +1,4 @@
+// this is the main parlay form and results section
 "use client";
 
 import { useEffect, useState } from "react";
@@ -18,6 +19,7 @@ import LossWarning from "@/components/LossWarning";
 
 
 export default function BetForm() {
+  // the inputs stay as strings until the form is submitted
   const [stake, setStake] = useState("");
 
   const [legs, setLegs] = useState([
@@ -25,6 +27,7 @@ export default function BetForm() {
     "",
   ]);
 
+  // all calculated values are kept together after a valid submission
   const [result, setResult] = useState<null | {
     winProbability: number;
     lossProbability: number;
@@ -41,6 +44,7 @@ export default function BetForm() {
   const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
 
   useEffect(() => {
+    // saving is only offered when there is an active login
     async function checkSession() {
       try {
         const response = await fetch("/api/auth/session");
@@ -58,6 +62,7 @@ export default function BetForm() {
     index: number,
     value: string
   ) {
+    // copy the array so react can see that one leg changed
     const updatedLegs = [...legs];
 
     updatedLegs[index] = value;
@@ -67,6 +72,7 @@ export default function BetForm() {
 
 
   function addLeg() {
+    // a blank value gives the user another odds box to fill in
     setLegs([
       ...legs,
       "",
@@ -75,6 +81,7 @@ export default function BetForm() {
 
 
   function removeLeg(index: number) {
+    // always leave at least two legs in a parlay
     if (legs.length <= 2) {
       return;
     }
@@ -91,6 +98,7 @@ export default function BetForm() {
   function handleSubmit(
     event: React.SubmitEvent<HTMLFormElement>
   ) {
+    // keep everything on the page while the form is checked
     event.preventDefault();
   
     setError("");
@@ -106,6 +114,7 @@ export default function BetForm() {
       !Number.isFinite(stakeNumber) ||
       stakeNumber <= 0
     ) {
+      // a missing or negative stake cannot be calculated
       setError("Please enter a valid stake greater than 0.");
       return;
     }
@@ -115,6 +124,7 @@ export default function BetForm() {
     );
   
     if (hasEmptyLeg) {
+      // do not let an empty box quietly turn into zero
       setError("Please enter odds for every parlay leg.");
       return;
     }
@@ -126,6 +136,7 @@ export default function BetForm() {
     );
   
     if (invalidOdds) {
+      // american odds can be positive or negative but never zero
       setError("Please enter valid American odds for every leg.");
       return;
     }
@@ -136,6 +147,7 @@ export default function BetForm() {
           americanToProbability(odds)
       );
   
+    // every leg has to win, so their probabilities are multiplied together
     const winProbability =
       calculateParlayProbability(
         legProbabilities
@@ -168,6 +180,7 @@ export default function BetForm() {
         combinedDecimalOdds
       );
     
+    // the final label keeps the raw percentage easy to understand
     const risk =
       classifyRisk(
         winProbability
@@ -187,6 +200,7 @@ export default function BetForm() {
 
 
   async function saveAnalysis() {
+    // there is nothing useful to save until a result exists
     if (!result) {
       return;
     }
@@ -194,6 +208,7 @@ export default function BetForm() {
     setSaveMessage("");
   
     try {
+      // the api links this data to the user from the secure session
       const response =
         await fetch(
           "/api/analyses",
@@ -244,12 +259,14 @@ export default function BetForm() {
         );
 
       if (response.status === 401) {
+        // an expired session needs a fresh login
         window.location.href = "/login";
         return;
       }
   
   
       if (!response.ok) {
+        // keep failed saves on the page so they can be tried again
         setSaveMessage(
           "Analysis could not be saved."
         );
@@ -263,6 +280,7 @@ export default function BetForm() {
       );
   
     } catch {
+      // use the same simple message for a network failure
       setSaveMessage(
         "Analysis could not be saved."
       );
@@ -279,6 +297,7 @@ export default function BetForm() {
             Enter Parlay
           </h2>
 
+          {/* collect the stake and one american odds value per leg */}
           <form onSubmit={handleSubmit}>
 
             <div className="mb-4">
@@ -313,6 +332,7 @@ export default function BetForm() {
             </h3>
 
 
+            {/* build one input row for every leg in state */}
             {legs.map(
               (leg, index) => (
                 <div
@@ -366,12 +386,14 @@ export default function BetForm() {
               )
             )}
 
+            {/* put validation feedback right beside the form */}
             {error && (
                 <div className="alert alert-danger mt-3">
                     {error}
                 </div>
             )}
             
+            {/* add another blank leg without submitting */}
             <button
               type="button"
               className="btn btn-outline-secondary me-2"
@@ -381,6 +403,7 @@ export default function BetForm() {
             </button>
 
 
+            {/* run all of the calculations with the current values */}
             <button
               type="submit"
               className="btn btn-primary"
@@ -394,6 +417,7 @@ export default function BetForm() {
       </div>
 
 
+      {/* results stay hidden until the inputs pass validation */}
       {result && (
         <div className="card mt-4">
           <div className="card-body">
@@ -466,6 +490,7 @@ export default function BetForm() {
             <hr />
 
 
+            {/* list the probability implied by each individual leg */}
             <h3 className="h5">
               Individual Leg Probabilities
             </h3>
@@ -499,6 +524,7 @@ export default function BetForm() {
             </ul>
 
 
+            {/* show how the combined chance changes after every added leg */}
             <h3 className="h5">
               Probability After Each Leg
             </h3>
@@ -531,14 +557,17 @@ export default function BetForm() {
 
             </ul>
 
+            {/* turn the cumulative values into a quick visual */}
             <ProbabilityChart
               probabilities={result.cumulativeProbabilities}
             />
 
+            {/* make the overall chance of losing the main warning */}
             <LossWarning
               lossProbability={result.lossProbability}
             />
 
+            {/* logged-in users can save while guests get a login link */}
             {isLoggedIn ? (
               <button
                 type="button"
@@ -562,6 +591,7 @@ export default function BetForm() {
               </button>
             )}
 
+            {/* confirm whether the database save worked */}
             {saveMessage && (
               <div className="alert alert-info mt-3">
                 {saveMessage}

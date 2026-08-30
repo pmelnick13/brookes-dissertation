@@ -1,3 +1,4 @@
+// this navigation also changes its account links based on the session
 "use client";
 
 import Link from "next/link";
@@ -9,15 +10,18 @@ type SessionStatus = {
 };
 
 export default function Navbar() {
+  // null means the session check has not finished yet
   const [session, setSession] = useState<SessionStatus | null>(null);
 
   useEffect(() => {
+    // check the login once when the navigation first appears
     async function loadSession() {
       try {
         const response = await fetch("/api/auth/session");
         const data: SessionStatus = await response.json();
         setSession(data);
       } catch {
+        // a failed check is safest to treat as logged out
         setSession({ isLoggedIn: false, username: null });
       }
     }
@@ -26,6 +30,7 @@ export default function Navbar() {
   }, []);
 
   async function logout() {
+    // clear the cookie and reload the dashboard as a guest
     await fetch("/api/auth/logout", { method: "POST" });
     window.location.href = "/";
   }
@@ -38,6 +43,7 @@ export default function Navbar() {
         </Link>
 
         <div className="navbar-nav ms-auto align-items-lg-center">
+          {/* these links are always available */}
           <Link className="nav-link" href="/">
             Dashboard
           </Link>
@@ -62,6 +68,7 @@ export default function Navbar() {
             About
           </Link>
 
+          {/* swap the account controls once the session is known */}
           {session?.isLoggedIn ? (
             <>
               <span className="navbar-text ms-lg-3">

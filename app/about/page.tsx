@@ -1,3 +1,4 @@
+// this page gives a quick overview of the project and its limits
 export default function AboutPage() {
   return (
     <main className="container py-5">
@@ -9,6 +10,7 @@ export default function AboutPage() {
         </p>
       </div>
 
+      {/* explain the main reason the project exists */}
       <section className="card mb-4">
         <div className="card-body">
           <h2 className="h4">Project Aim</h2>
@@ -19,6 +21,7 @@ export default function AboutPage() {
         </div>
       </section>
 
+      {/* give a quick list of the features included in the mvp */}
       <section className="card mb-4">
         <div className="card-body">
           <h2 className="h4">What the Application Does</h2>
@@ -35,6 +38,7 @@ export default function AboutPage() {
         </div>
       </section>
 
+      {/* be clear about what users should not expect from the tool */}
       <section className="card mb-4">
         <div className="card-body">
           <h2 className="h4">What the Application Does Not Do</h2>
@@ -48,6 +52,7 @@ export default function AboutPage() {
         </div>
       </section>
 
+      {/* keep the responsible gambling advice visible */}
       <section className="card border-warning mb-4">
         <div className="card-body">
           <h2 className="h4">Responsible Gambling</h2>
@@ -66,6 +71,7 @@ export default function AboutPage() {
         </div>
       </section>
 
+      {/* finish with places users can go for proper support */}
       <section className="card border-danger">
         <div className="card-body">
           <h2 className="h4">Help and Support</h2>
@@ -117,6 +123,7 @@ function SupportItem({
   link: string;
   linkText: string;
 }) {
+  // this keeps all three support cards looking the same
   return (
     <div className="col-md-4">
       <div className="border rounded p-3 h-100">

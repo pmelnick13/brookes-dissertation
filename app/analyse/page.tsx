@@ -1,3 +1,4 @@
+// these are the two calculators used on the analyse page
 import BetForm from "@/components/BetForm";
 import MarginCalculator from "@/components/MarginCalculator";
 
@@ -5,6 +6,7 @@ export default function AnalysePage() {
   return (
     <main className="container py-5">
 
+      {/* start with a quick explanation of what this page does */}
       <div className="mb-4">
         <h1>Analyse Bet</h1>
 
@@ -18,8 +20,10 @@ export default function AnalysePage() {
 
         <div className="col-lg-7">
 
+          {/* this is the main parlay calculator */}
           <BetForm />
 
+          {/* this handles a separate two-outcome market */}
           <MarginCalculator />
 
         </div>

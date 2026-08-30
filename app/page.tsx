@@ -1,3 +1,4 @@
+// this is the main dashboard with summaries from saved analyses
 "use client";
 
 import { useEffect, useState } from "react";
@@ -30,26 +31,31 @@ const riskLevels = [
 ];
 
 export default function Home() {
+  // keep the summary, loading state, and any error separate
   const [dashboard, setDashboard] = useState(emptyDashboard);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
+    // grab the saved bets once when the dashboard first opens
     async function loadDashboard() {
       try {
         const response = await fetch("/api/analyses");
 
         if (response.status === 401) {
+          // guests can still see the empty dashboard without an error
           return;
         }
 
         if (!response.ok) {
+          // send any other failed response to the catch block
           throw new Error("Failed to load dashboard");
         }
 
         const analyses: Analysis[] = await response.json();
 
         if (analyses.length === 0) {
+          // the default values already cover an empty account
           return;
         }
 
@@ -58,6 +64,7 @@ export default function Home() {
           0
         );
 
+        // the order here makes it easy to pick the strongest risk label
         const highestRisk = analyses.reduce(
           (highest, analysis) => {
             const currentLevel = riskLevels.indexOf(analysis.risk);
@@ -76,8 +83,10 @@ export default function Home() {
           highestRisk,
         });
       } catch {
+        // keep database or network details away from the page
         setError("Dashboard data could not be loaded.");
       } finally {
+        // stop the placeholders once the request has finished
         setIsLoading(false);
       }
     }
@@ -97,12 +106,14 @@ export default function Home() {
         </p>
       </div>
 
+      {/* only show the red message if loading failed */}
       {error && (
         <div className="alert alert-danger">
           {error}
         </div>
       )}
 
+      {/* these cards turn the saved records into quick summaries */}
       <div className="row g-4">
         <div className="col-md-6 col-lg-3">
           <div className="card h-100">
@@ -165,6 +176,7 @@ export default function Home() {
         </div>
       </div>
 
+       {/* finish with a clear way into the main calculator */}
        <div className="card mt-5">
         <div className="card-body p-4">
           <h2 className="h4">

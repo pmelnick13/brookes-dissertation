@@ -1,3 +1,4 @@
+// this page explains the maths and assumptions behind the results
 export default function MethodologyPage() {
   return (
     <main className="container py-5">
@@ -9,6 +10,7 @@ export default function MethodologyPage() {
         </p>
       </div>
 
+      {/* start with the basic conversion used by the other calculations */}
       <MethodSection title="1. Converting American Odds">
         <p>
           American odds are converted into decimal odds before returns are calculated.
@@ -27,6 +29,7 @@ export default function MethodologyPage() {
         </p>
       </MethodSection>
 
+      {/* explain how the sportsbook price becomes a percentage */}
       <MethodSection title="2. Implied Probability">
         <p>
           Implied probability is the chance of an outcome suggested by the sportsbook odds.
@@ -45,6 +48,7 @@ export default function MethodologyPage() {
         </p>
       </MethodSection>
 
+      {/* show why adding legs quickly lowers the overall chance */}
       <MethodSection title="3. Parlay Probability">
         <p>
           The application multiplies the implied probability of every leg.
@@ -59,6 +63,7 @@ export default function MethodologyPage() {
         </p>
       </MethodSection>
 
+      {/* separate the full return from the actual profit */}
       <MethodSection title="4. Potential Return and Profit">
         <Formula>
           Potential return = Stake × Combined decimal odds
@@ -73,6 +78,7 @@ export default function MethodologyPage() {
         </p>
       </MethodSection>
 
+      {/* explain how the two-outcome margin is removed */}
       <MethodSection title="5. Bookmaker Margin">
         <p>
           The margin calculator is designed for a market with two possible outcomes.
@@ -91,6 +97,7 @@ export default function MethodologyPage() {
         </p>
       </MethodSection>
 
+      {/* list the simple thresholds used for the risk labels */}
       <MethodSection title="6. Risk Classification">
         <div className="table-responsive">
           <table className="table table-bordered mb-0">
@@ -112,6 +119,7 @@ export default function MethodologyPage() {
         </div>
       </MethodSection>
 
+      {/* describe what happens during each simulated bet */}
       <MethodSection title="7. Monte Carlo Simulation">
         <p>
           The simulation generates a random number for every bet. The bet wins when that number falls within the chosen win probability.
@@ -122,6 +130,7 @@ export default function MethodologyPage() {
         </p>
       </MethodSection>
 
+      {/* collect the important assumptions in one obvious place */}
       <section className="card border-warning">
         <div className="card-body">
           <h2 className="h4">Important Limitations</h2>
@@ -156,6 +165,7 @@ function MethodSection({
   title: string;
   children: React.ReactNode;
 }) {
+  // reuse one card layout for every part of the explanation
   return (
     <section className="card mb-4">
       <div className="card-body">
@@ -167,6 +177,7 @@ function MethodSection({
 }
 
 function Formula({ children }: { children: React.ReactNode }) {
+  // formulas get their own box so they are easy to spot
   return (
     <div className="bg-light border rounded p-3 mb-3">
       <code className="text-dark">{children}</code>

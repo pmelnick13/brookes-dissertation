@@ -1,3 +1,4 @@
+// this calculator shows the margin in a two-outcome market
 "use client";
 
 import { useState } from "react";
@@ -10,10 +11,12 @@ import {
 
 
 export default function MarginCalculator() {
+  // keep both odds inputs exactly as the user typed them
   const [outcomeA, setOutcomeA] = useState("");
   const [outcomeB, setOutcomeB] = useState("");
   const [error, setError] = useState("");
 
+  // the calculated market values stay together in one result
   const [result, setResult] = useState<null | {
     probabilityA: number;
     probabilityB: number;
@@ -26,6 +29,7 @@ export default function MarginCalculator() {
   function handleSubmit(
     event: React.SyntheticEvent<HTMLFormElement>
   ) {
+    // both sides are needed before the market margin means anything
     event.preventDefault();
 
     setError("");
@@ -37,6 +41,7 @@ export default function MarginCalculator() {
       outcomeA.trim() === "" ||
       outcomeB.trim() === ""
     ) {
+      // both outcomes are needed to describe the whole market
       setError(
         "Please enter odds for both outcomes."
       );
@@ -49,6 +54,7 @@ export default function MarginCalculator() {
       oddsA === 0 ||
       oddsB === 0
     ) {
+      // zero is not a valid american odds value
       setError(
         "Please enter valid American odds."
       );
@@ -66,6 +72,7 @@ export default function MarginCalculator() {
       probabilityB,
     ];
 
+    // anything over a combined 100% is the bookmaker's margin
     const overround =
       calculateOverround(probabilities);
 
@@ -97,6 +104,7 @@ export default function MarginCalculator() {
           outcomes in a two-outcome market.
         </p>
 
+        {/* collect one price for each side of the market */}
         <form onSubmit={handleSubmit}>
 
           <div className="mb-3">
@@ -147,6 +155,7 @@ export default function MarginCalculator() {
           </div>
 
 
+          {/* keep any validation message close to the inputs */}
           {error && (
             <div className="alert alert-danger">
               {error}
@@ -154,6 +163,7 @@ export default function MarginCalculator() {
           )}
 
 
+          {/* calculate the margin and fair probabilities together */}
           <button
             type="submit"
             className="btn btn-primary"
@@ -164,6 +174,7 @@ export default function MarginCalculator() {
         </form>
 
 
+        {/* only show this section after a valid calculation */}
         {result && (
           <div className="mt-4">
 

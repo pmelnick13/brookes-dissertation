@@ -1,3 +1,4 @@
+// this chart shows how each extra leg lowers the chance of winning
 type ProbabilityChartProps = {
   probabilities: number[];
 };
@@ -5,6 +6,7 @@ type ProbabilityChartProps = {
 export default function ProbabilityChart({
   probabilities,
 }: ProbabilityChartProps) {
+  // these values leave enough room for the axis labels
   const chartWidth = 600;
   const chartHeight = 300;
   const leftSpace = 55;
@@ -12,9 +14,11 @@ export default function ProbabilityChart({
   const topSpace = 20;
   const bottomSpace = 45;
 
+  // this is the actual drawing space inside the chart
   const graphWidth = chartWidth - leftSpace - rightSpace;
   const graphHeight = chartHeight - topSpace - bottomSpace;
 
+  // turn every probability into a position on the chart
   const points = probabilities.map((probability, index) => {
     const x =
       leftSpace +
@@ -27,10 +31,12 @@ export default function ProbabilityChart({
     return { x, y, probability };
   });
 
+  // svg needs all of the line coordinates in one string
   const linePoints = points
     .map((point) => `${point.x},${point.y}`)
     .join(" ");
 
+  // these values create the horizontal guides
   const percentageLines = [100, 75, 50, 25, 0];
 
   return (
@@ -49,6 +55,7 @@ export default function ProbabilityChart({
         role="img"
         aria-label="Chart showing cumulative win probability after each parlay leg"
       >
+        {/* draw the percentage guides and their labels */}
         {percentageLines.map((percentage) => {
           const y =
             topSpace +
@@ -77,6 +84,7 @@ export default function ProbabilityChart({
           );
         })}
 
+        {/* join the calculated points with one blue line */}
         <polyline
           points={linePoints}
           fill="none"
@@ -84,6 +92,7 @@ export default function ProbabilityChart({
           strokeWidth="3"
         />
 
+        {/* add a labelled dot for each parlay leg */}
         {points.map((point, index) => (
           <g key={index}>
             <circle

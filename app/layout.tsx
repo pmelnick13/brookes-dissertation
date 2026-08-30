@@ -1,3 +1,4 @@
+// this layout wraps every page with the shared navigation and styles
 import type { Metadata } from "next"; 
 
 import "bootstrap/dist/css/bootstrap.min.css"; 
@@ -17,8 +18,10 @@ export default function RootLayout({
   return ( 
     <html lang="en"> 
       <body>
+        {/* this stays at the top no matter which page is open */}
         <Navbar />
 
+        {/* next.js swaps the current page into this spot */}
         {children}
       </body> 
     </html> 
