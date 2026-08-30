@@ -9,6 +9,10 @@ type SimulationResult = {
   medianEndingBalance: number;
   bestEndingBalance: number;
   worstEndingBalance: number;
+  percentageEndingInLoss: number;
+  percentageUnableToContinue: number;
+  averageLongestLosingStreak: number;
+  longestLosingStreak: number;
   endingBalance: number;
   profitOrLoss: number;
   wins: number;
@@ -96,12 +100,17 @@ export default function MonteCarloSimulator() {
     let exampleWins = 0;
     let exampleLosses = 0;
     let exampleBalances = [balanceNumber];
+    let simulationsEndingInLoss = 0;
+    let simulationsUnableToContinue = 0;
+    const longestLosingStreaks: number[] = [];
 
     // run the same betting setup many times so the outcomes can be compared
     for (let simulation = 0; simulation < simulationsNumber; simulation += 1) {
       let currentBalance = balanceNumber;
       let wins = 0;
       let losses = 0;
+      let currentLosingStreak = 0;
+      let longestLosingStreak = 0;
       const balances = [currentBalance];
 
       // each inner loop is one bet in the current simulation
@@ -116,15 +125,32 @@ export default function MonteCarloSimulator() {
         if (betWon) {
           currentBalance += stakeNumber * (oddsNumber - 1);
           wins += 1;
+          currentLosingStreak = 0;
         } else {
           currentBalance -= stakeNumber;
           losses += 1;
+          currentLosingStreak += 1;
+          longestLosingStreak = Math.max(
+            longestLosingStreak,
+            currentLosingStreak
+          );
         }
 
         balances.push(currentBalance);
       }
 
       endingBalances.push(currentBalance);
+      longestLosingStreaks.push(longestLosingStreak);
+
+      // compare the final balance with the starting point for this run
+      if (currentBalance < balanceNumber) {
+        simulationsEndingInLoss += 1;
+      }
+
+      // this means another bet at the chosen stake could not be placed
+      if (currentBalance < stakeNumber) {
+        simulationsUnableToContinue += 1;
+      }
 
       // keep the first run as the example shown in the line chart
       if (simulation === 0) {
@@ -148,6 +174,9 @@ export default function MonteCarloSimulator() {
     const averageEndingBalance =
       endingBalances.reduce((total, balance) => total + balance, 0) /
       endingBalances.length;
+    const averageLongestLosingStreak =
+      longestLosingStreaks.reduce((total, streak) => total + streak, 0) /
+      longestLosingStreaks.length;
 
     setResult({
       simulations: simulationsNumber,
@@ -155,6 +184,12 @@ export default function MonteCarloSimulator() {
       medianEndingBalance,
       bestEndingBalance: Math.max(...endingBalances),
       worstEndingBalance: Math.min(...endingBalances),
+      percentageEndingInLoss:
+        (simulationsEndingInLoss / simulationsNumber) * 100,
+      percentageUnableToContinue:
+        (simulationsUnableToContinue / simulationsNumber) * 100,
+      averageLongestLosingStreak,
+      longestLosingStreak: Math.max(...longestLosingStreaks),
       endingBalance: exampleEndingBalance,
       profitOrLoss: exampleEndingBalance - balanceNumber,
       wins: exampleWins,
@@ -350,6 +385,27 @@ function SimulationResults({ result }: { result: SimulationResult }) {
           <ResultItem
             label="Worst Ending Balance"
             value={`$${result.worstEndingBalance.toFixed(2)}`}
+          />
+        </div>
+
+        <h3 className="h5 mt-3">Risk Across Simulations</h3>
+
+        <div className="row">
+          <ResultItem
+            label="Simulations Ending in Loss"
+            value={`${result.percentageEndingInLoss.toFixed(1)}%`}
+          />
+          <ResultItem
+            label="Unable to Afford Another Stake"
+            value={`${result.percentageUnableToContinue.toFixed(1)}%`}
+          />
+          <ResultItem
+            label="Average Longest Losing Streak"
+            value={result.averageLongestLosingStreak.toFixed(1)}
+          />
+          <ResultItem
+            label="Longest Losing Streak Seen"
+            value={String(result.longestLosingStreak)}
           />
         </div>
 
