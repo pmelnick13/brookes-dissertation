@@ -122,11 +122,15 @@ export default function MethodologyPage() {
       {/* describe what happens during each simulated bet */}
       <MethodSection title="7. Monte Carlo Simulation">
         <p>
-          The simulation generates a random number for every bet. The bet wins when that number falls within the chosen win probability.
+          The user chooses a starting balance, fixed stake, number of bets, number of simulations, win probability, and decimal odds. Each simulation begins with the same settings and generates a separate sequence of results.
+        </p>
+
+        <p>
+          A win adds the potential profit to the balance. A loss removes the stake. The simulation stops early if the balance becomes too low to place another bet.
         </p>
 
         <p className="mb-0">
-          A win adds the potential profit to the balance. A loss removes the stake. The simulation stops early if the balance becomes too low to place another bet.
+          Results include average, median, best, and worst ending balances; the percentage of simulations ending in a loss; the percentage unable to afford another stake; losing-streak measurements; an ending-balance distribution; and one example balance path.
         </p>
       </MethodSection>
 
@@ -143,10 +147,7 @@ export default function MethodologyPage() {
               Parlay calculations use probabilities implied by sportsbook odds. These may include a bookmaker margin.
             </li>
             <li>
-              Expected value uses the implied probability, not an independently researched prediction of the true probability.
-            </li>
-            <li>
-              A single simulation is only one possible outcome and will change each time it runs.
+              The simulation uses pseudorandom outcomes. Results will change between runs and illustrate possible outcomes rather than predict what will happen.
             </li>
           </ul>
         </div>

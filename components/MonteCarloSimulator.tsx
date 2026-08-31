@@ -13,6 +13,7 @@ type SimulationResult = {
   percentageUnableToContinue: number;
   averageLongestLosingStreak: number;
   longestLosingStreak: number;
+  endingBalances: number[];
   endingBalance: number;
   profitOrLoss: number;
   wins: number;
@@ -190,6 +191,7 @@ export default function MonteCarloSimulator() {
         (simulationsUnableToContinue / simulationsNumber) * 100,
       averageLongestLosingStreak,
       longestLosingStreak: Math.max(...longestLosingStreaks),
+      endingBalances,
       endingBalance: exampleEndingBalance,
       profitOrLoss: exampleEndingBalance - balanceNumber,
       wins: exampleWins,
@@ -409,6 +411,8 @@ function SimulationResults({ result }: { result: SimulationResult }) {
           />
         </div>
 
+        <EndingBalanceChart balances={result.endingBalances} />
+
         <hr />
 
         <h3 className="h5">Example Simulation</h3>
@@ -474,6 +478,118 @@ function SimulationResults({ result }: { result: SimulationResult }) {
           </text>
         </svg>
       </div>
+    </div>
+  );
+}
+
+function EndingBalanceChart({ balances }: { balances: number[] }) {
+  const chartWidth = 600;
+  const chartHeight = 280;
+  const padding = 45;
+  const numberOfBins = 10;
+  const lowestBalance = Math.min(...balances);
+  const highestBalance = Math.max(...balances);
+  const balanceRange = highestBalance - lowestBalance;
+  const binSize = balanceRange === 0 ? 1 : balanceRange / numberOfBins;
+
+  // split all ending balances into ten equally sized groups
+  const bins = Array.from({ length: numberOfBins }, (_, index) => ({
+    minimum:
+      balanceRange === 0 ? lowestBalance : lowestBalance + index * binSize,
+    maximum:
+      balanceRange === 0
+        ? highestBalance
+        : lowestBalance + (index + 1) * binSize,
+    count: 0,
+  }));
+
+  balances.forEach((balance) => {
+    const binIndex =
+      balanceRange === 0
+        ? 0
+        : Math.min(
+            Math.floor(((balance - lowestBalance) / balanceRange) * numberOfBins),
+            numberOfBins - 1
+          );
+
+    bins[binIndex].count += 1;
+  });
+
+  const highestCount = Math.max(...bins.map((bin) => bin.count), 1);
+  const graphWidth = chartWidth - padding * 2;
+  const graphHeight = chartHeight - padding * 2;
+  const barWidth = graphWidth / numberOfBins;
+
+  return (
+    <div className="mb-4">
+      <h3 className="h5 mt-3">Ending Balance Distribution</h3>
+
+      <p className="text-muted">
+        Taller bars show the balance ranges where more simulations finished.
+      </p>
+
+      <svg
+        viewBox={`0 0 ${chartWidth} ${chartHeight}`}
+        className="w-100 border rounded bg-white"
+        role="img"
+        aria-label="Histogram showing the distribution of ending balances"
+      >
+        <line
+          x1={padding}
+          y1={padding}
+          x2={padding}
+          y2={chartHeight - padding}
+          stroke="#6c757d"
+        />
+
+        <line
+          x1={padding}
+          y1={chartHeight - padding}
+          x2={chartWidth - padding}
+          y2={chartHeight - padding}
+          stroke="#6c757d"
+        />
+
+        {/* draw one bar for each ending-balance range */}
+        {bins.map((bin, index) => {
+          const barHeight = (bin.count / highestCount) * graphHeight;
+          const x = padding + index * barWidth + 2;
+          const y = chartHeight - padding - barHeight;
+
+          return (
+            <rect
+              key={index}
+              x={x}
+              y={y}
+              width={Math.max(barWidth - 4, 1)}
+              height={barHeight}
+              fill="#0d6efd"
+            >
+              <title>
+                ${bin.minimum.toFixed(2)} to ${bin.maximum.toFixed(2)}: {bin.count} simulations
+              </title>
+            </rect>
+          );
+        })}
+
+        <text x={padding} y={chartHeight - 15} fontSize="12" fill="#6c757d">
+          ${lowestBalance.toFixed(0)}
+        </text>
+
+        <text
+          x={chartWidth - padding}
+          y={chartHeight - 15}
+          textAnchor="end"
+          fontSize="12"
+          fill="#6c757d"
+        >
+          ${highestBalance.toFixed(0)}
+        </text>
+
+        <text x="8" y={padding + 5} fontSize="12" fill="#6c757d">
+          {highestCount}
+        </text>
+      </svg>
     </div>
   );
 }

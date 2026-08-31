@@ -9,7 +9,7 @@ export default function SimulationPage() {
         <h1>Bankroll Simulation</h1>
 
         <p className="text-muted">
-          See how repeated bets could change a betting balance over time.
+          Compare many possible outcomes from repeatedly placing similar bets.
         </p>
       </div>
 
