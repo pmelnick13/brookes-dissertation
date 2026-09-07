@@ -2,6 +2,7 @@
 "use client";
 
 import { useState } from "react";
+import { americanToDecimal } from "@/lib/bettingMath";
 
 type SimulationResult = {
   simulations: number;
@@ -28,8 +29,8 @@ export default function MonteCarloSimulator() {
   const [stake, setStake] = useState("10");
   const [numberOfBets, setNumberOfBets] = useState("100");
   const [numberOfSimulations, setNumberOfSimulations] = useState("1000");
-  const [winProbability, setWinProbability] = useState("25");
-  const [decimalOdds, setDecimalOdds] = useState("3.00");
+  const [assumedWinProbability, setAssumedWinProbability] = useState("25");
+  const [americanOdds, setAmericanOdds] = useState("200");
   // keep the latest run and any validation problem separate
   const [result, setResult] = useState<SimulationResult | null>(null);
   const [error, setError] = useState("");
@@ -43,8 +44,8 @@ export default function MonteCarloSimulator() {
     const stakeNumber = Number(stake);
     const betsNumber = Number(numberOfBets);
     const simulationsNumber = Number(numberOfSimulations);
-    const probabilityNumber = Number(winProbability);
-    const oddsNumber = Number(decimalOdds);
+    const probabilityNumber = Number(assumedWinProbability);
+    const americanOddsNumber = Number(americanOdds);
 
     if (!Number.isFinite(balanceNumber) || balanceNumber <= 0) {
       // the simulation needs some money to start with
@@ -86,15 +87,18 @@ export default function MonteCarloSimulator() {
       probabilityNumber >= 100
     ) {
       // zero and 100 would remove all randomness from the run
-      setError("Win probability must be between 0 and 100.");
+      setError("Assumed win probability must be between 0 and 100.");
       return;
     }
 
-    if (!Number.isFinite(oddsNumber) || oddsNumber <= 1) {
-      // decimal odds have to return more than the original stake
-      setError("Decimal odds must be greater than 1.");
+    if (!Number.isFinite(americanOddsNumber) || americanOddsNumber === 0) {
+      // american odds can be positive or negative but never zero
+      setError("Please enter valid American odds.");
       return;
     }
+
+    // convert once so the payout calculation can stay simple during every run
+    const decimalOddsNumber = americanToDecimal(americanOddsNumber);
 
     const endingBalances: number[] = [];
     let exampleEndingBalance = balanceNumber;
@@ -124,7 +128,7 @@ export default function MonteCarloSimulator() {
 
         // wins add profit while losses remove the full stake
         if (betWon) {
-          currentBalance += stakeNumber * (oddsNumber - 1);
+          currentBalance += stakeNumber * (decimalOddsNumber - 1);
           wins += 1;
           currentLosingStreak = 0;
         } else {
@@ -249,22 +253,26 @@ export default function MonteCarloSimulator() {
               />
 
               <NumberInput
-                id="win-probability"
-                label="Win Probability (%)"
-                value={winProbability}
-                onChange={setWinProbability}
+                id="assumed-win-probability"
+                label="Assumed Win Probability (%)"
+                value={assumedWinProbability}
+                onChange={setAssumedWinProbability}
                 min="0.01"
                 max="99.99"
                 step="0.01"
               />
 
+              <p className="form-text mt-n2">
+                Use the implied probability from the Analyse Bet page as a
+                starting point, or enter your own scenario.
+              </p>
+
               <NumberInput
-                id="decimal-odds"
-                label="Decimal Odds"
-                value={decimalOdds}
-                onChange={setDecimalOdds}
-                min="1.01"
-                step="0.01"
+                id="american-odds"
+                label="American Odds"
+                value={americanOdds}
+                onChange={setAmericanOdds}
+                step="1"
               />
 
               {/* show the first validation problem beside the form */}
@@ -301,7 +309,7 @@ type NumberInputProps = {
   label: string;
   value: string;
   onChange: (value: string) => void;
-  min: string;
+  min?: string;
   max?: string;
   step: string;
 };

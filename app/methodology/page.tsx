@@ -122,7 +122,7 @@ export default function MethodologyPage() {
       {/* describe what happens during each simulated bet */}
       <MethodSection title="7. Monte Carlo Simulation">
         <p>
-          The user chooses a starting balance, fixed stake, number of bets, number of simulations, win probability, and decimal odds. Each simulation begins with the same settings and generates a separate sequence of results.
+          The user chooses a starting balance, fixed stake, number of bets, number of simulations, assumed win probability, and American odds. The American odds are converted into decimal odds for the payout calculation. Each simulation begins with the same settings and generates a separate sequence of results.
         </p>
 
         <p>
@@ -148,6 +148,9 @@ export default function MethodologyPage() {
             </li>
             <li>
               The simulation uses pseudorandom outcomes. Results will change between runs and illustrate possible outcomes rather than predict what will happen.
+            </li>
+            <li>
+              The assumed win probability is a scenario chosen by the user, not a prediction of the true chance of winning. The Analyse Bet page can provide an implied probability as a starting point.
             </li>
           </ul>
         </div>
