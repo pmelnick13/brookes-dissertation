@@ -8,11 +8,11 @@ export default function AnalysePage() {
 
       {/* start with a quick explanation of what this page does */}
       <div className="mb-4">
-        <h1>Analyse Bet</h1>
+        <h1>Analyse Single Bet or Parlay</h1>
 
         <p className="text-muted">
-          Enter sportsbook odds to understand
-          their probability and financial risk.
+          Enter one sportsbook price for a single bet or add more
+          selections to analyse a parlay.
         </p>
       </div>
 
@@ -20,7 +20,7 @@ export default function AnalysePage() {
 
         <div className="col-lg-7">
 
-          {/* this is the main parlay calculator */}
+          {/* this handles both single bets and parlays */}
           <BetForm />
 
           {/* this handles a separate two-outcome market */}

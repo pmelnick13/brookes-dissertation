@@ -23,7 +23,7 @@ const emptyDashboard: DashboardData = {
 };
 
 const riskLevels = [
-  "Lower",
+  "Higher implied chance, stake still at risk",
   "Moderate",
   "High",
   "Very High",
@@ -72,7 +72,7 @@ export default function Home() {
 
             return currentLevel > highestLevel ? analysis.risk : highest;
           },
-          "Lower"
+          "Higher implied chance, stake still at risk"
         );
 
         setDashboard({

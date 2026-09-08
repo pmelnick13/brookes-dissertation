@@ -1,4 +1,4 @@
-// this is the main parlay form and results section
+// this is the main single bet and parlay form and results section
 "use client";
 
 import { useEffect, useState } from "react";
@@ -22,10 +22,7 @@ export default function BetForm() {
   // the inputs stay as strings until the form is submitted
   const [stake, setStake] = useState("");
 
-  const [legs, setLegs] = useState([
-    "",
-    "",
-  ]);
+  const [legs, setLegs] = useState([""]);
 
   // all calculated values are kept together after a valid submission
   const [result, setResult] = useState<null | {
@@ -81,8 +78,8 @@ export default function BetForm() {
 
 
   function removeLeg(index: number) {
-    // always leave at least two legs in a parlay
-    if (legs.length <= 2) {
+    // always leave one odds entry available for a single bet
+    if (legs.length <= 1) {
       return;
     }
 
@@ -125,7 +122,7 @@ export default function BetForm() {
   
     if (hasEmptyLeg) {
       // do not let an empty box quietly turn into zero
-      setError("Please enter odds for every parlay leg.");
+      setError("Please enter odds for every selection.");
       return;
     }
   
@@ -294,7 +291,7 @@ export default function BetForm() {
         <div className="card-body">
 
           <h2 className="h4 mb-4">
-            Enter Parlay
+            Enter Single Bet or Parlay
           </h2>
 
           {/* collect the stake and one american odds value per leg */}
@@ -328,7 +325,7 @@ export default function BetForm() {
 
 
             <h3 className="h5">
-              Parlay Legs
+              Odds Entries
             </h3>
 
 
@@ -346,7 +343,7 @@ export default function BetForm() {
                       htmlFor={`leg-${index}`}
                       className="form-label"
                     >
-                      Leg {index + 1} Odds
+                      Selection {index + 1} Odds
                     </label>
 
                     <input
@@ -374,7 +371,7 @@ export default function BetForm() {
                         removeLeg(index)
                       }
                       disabled={
-                        legs.length <= 2
+                        legs.length <= 1
                       }
                     >
                       Remove
@@ -408,7 +405,7 @@ export default function BetForm() {
               type="submit"
               className="btn btn-primary"
             >
-              Analyse Parlay
+              Analyse Bet
             </button>
 
           </form>
@@ -423,7 +420,9 @@ export default function BetForm() {
           <div className="card-body">
 
             <h2 className="h4 mb-4">
-              Parlay Analysis
+              {result.legProbabilities.length === 1
+                ? "Single Bet Analysis"
+                : "Parlay Analysis"}
             </h2>
 
 
@@ -435,7 +434,10 @@ export default function BetForm() {
             </p>
 
             <p>
-                Combined Decimal Odds:{" "}
+                {result.legProbabilities.length === 1
+                  ? "Decimal Odds"
+                  : "Combined Decimal Odds"}
+                :{" "}
                 <strong>
                     {result.combinedDecimalOdds.toFixed(2)}
                 </strong>
@@ -456,13 +458,12 @@ export default function BetForm() {
             </p>
 
             <p>
-              Combined Win Probability:{" "}
+              {result.legProbabilities.length === 1
+                ? "Win Probability"
+                : "Combined Win Probability"}
+              :{" "}
               <strong>
-                {(
-                  result.winProbability *
-                  100
-                ).toFixed(2)}
-                %
+                {(result.winProbability * 100).toFixed(2)}%
               </strong>
             </p>
 
@@ -506,7 +507,7 @@ export default function BetForm() {
                   >
 
                     <span>
-                      Leg {index + 1}
+                      Selection {index + 1}
                     </span>
 
                     <strong>
@@ -524,43 +525,38 @@ export default function BetForm() {
             </ul>
 
 
-            {/* show how the combined chance changes after every added leg */}
-            <h3 className="h5">
-              Probability After Each Leg
-            </h3>
+            {result.legProbabilities.length === 1 ? (
+              <>
+                <h3 className="h5">Probability After Each Leg</h3>
+                <p>N/A for a single bet.</p>
+              </>
+            ) : (
+              <>
+                {/* show how the combined chance changes after every added leg */}
+                <h3 className="h5">Probability After Each Leg</h3>
 
+                <ul className="list-group mb-4">
+                  {result.cumulativeProbabilities.map(
+                    (probability, index) => (
+                      <li
+                        className="list-group-item d-flex justify-content-between"
+                        key={index}
+                      >
+                        <span>After Leg {index + 1}</span>
+                        <strong>
+                          {(probability * 100).toFixed(2)}%
+                        </strong>
+                      </li>
+                    )
+                  )}
+                </ul>
 
-            <ul className="list-group mb-4">
-
-              {result.cumulativeProbabilities.map(
-                (probability, index) => (
-                  <li
-                    className="list-group-item d-flex justify-content-between"
-                    key={index}
-                  >
-
-                    <span>
-                      After Leg {index + 1}
-                    </span>
-
-                    <strong>
-                      {(
-                        probability *
-                        100
-                      ).toFixed(2)}
-                      %
-                    </strong>
-
-                  </li>
-                )
-              )}
-
-            </ul>
-
-            {/* turn the cumulative values into a quick visual */}
-            <ProbabilityChart
-              probabilities={result.cumulativeProbabilities}
-            />
+                {/* turn the cumulative values into a quick visual */}
+                <ProbabilityChart
+                  probabilities={result.cumulativeProbabilities}
+                />
+              </>
+            )}
 
             {/* make the overall chance of losing the main warning */}
             <LossWarning

@@ -109,7 +109,7 @@ export default function MethodologyPage() {
             </thead>
 
             <tbody>
-              <tr><td>50% or higher</td><td>Lower</td></tr>
+              <tr><td>50% or higher</td><td>Higher implied chance, stake still at risk</td></tr>
               <tr><td>30% to below 50%</td><td>Moderate</td></tr>
               <tr><td>15% to below 30%</td><td>High</td></tr>
               <tr><td>5% to below 15%</td><td>Very High</td></tr>
@@ -150,7 +150,7 @@ export default function MethodologyPage() {
               The simulation uses pseudorandom outcomes. Results will change between runs and illustrate possible outcomes rather than predict what will happen.
             </li>
             <li>
-              The assumed win probability is a scenario chosen by the user, not a prediction of the true chance of winning. The Analyse Bet page can provide an implied probability as a starting point.
+              The assumed win probability is a scenario chosen by the user, not a prediction of the true chance of winning. The Analyse Single Bet or Parlay page can provide an implied probability as a starting point.
             </li>
           </ul>
         </div>

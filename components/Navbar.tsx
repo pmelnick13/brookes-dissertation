@@ -49,7 +49,7 @@ export default function Navbar() {
           </Link>
 
           <Link className="nav-link" href="/analyse">
-            Analyse Bet
+            Analyse Single Bet or Parlay
           </Link>
 
           <Link className="nav-link" href="/history">

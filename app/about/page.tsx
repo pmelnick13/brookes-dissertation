@@ -28,7 +28,7 @@ export default function AboutPage() {
 
           <ul className="mb-0">
             <li>Converts American odds into implied probabilities.</li>
-            <li>Calculates combined parlay probability and risk.</li>
+            <li>Calculates probability and risk for a single bet or parlay.</li>
             <li>Shows potential returns, profit, and loss probability.</li>
             <li>Explains bookmaker margin in two-outcome markets.</li>
             <li>Saves completed analyses and displays bet history.</li>

@@ -41,18 +41,20 @@ export function classifyRisk( winProbability: number ): string {
         return "Moderate"; 
     } 
     
-    return "Lower"; 
+    return "Higher implied chance, stake still at risk";
 }
 
 export function calculateParlayProbability(
     probabilities: number[]
   ): number {
     // multiplying works here because the mvp treats every leg as independent
-    return probabilities.reduce(
-      (combinedProbability, probability) =>
-        combinedProbability * probability,
-      1
-    );
+    let combinedProbability = 1;
+
+    for (const probability of probabilities) {
+      combinedProbability *= probability;
+    }
+
+    return combinedProbability;
   }
   
   
@@ -74,19 +76,14 @@ export function calculateCumulativeProbabilities(
 export function calculateCombinedDecimalOdds(
     americanOdds: number[]
   ): number {
-    return americanOdds
-      .map((odds) => {
-        if (odds > 0) {
-          return 1 + odds / 100;
-        }
-  
-        return 1 + 100 / Math.abs(odds);
-      })
-      .reduce(
-        (combinedOdds, decimalOdds) =>
-          combinedOdds * decimalOdds,
-        1
-      );
+    let combinedOdds = 1;
+
+    for (const odds of americanOdds) {
+      const decimalOdds = americanToDecimal(odds);
+      combinedOdds *= decimalOdds;
+    }
+
+    return combinedOdds;
   }
 
 // this includes both the profit and the original stake coming back
@@ -109,10 +106,11 @@ export function calculatePotentialProfit(
 export function calculateOverround(
     probabilities: number[]
   ): number {
-    const totalProbability = probabilities.reduce(
-      (total, probability) => total + probability,
-      0
-    );
+    let totalProbability = 0;
+
+    for (const probability of probabilities) {
+      totalProbability += probability;
+    }
   
     return totalProbability - 1;
   }
@@ -122,10 +120,11 @@ export function calculateOverround(
 export function removeVig(
     probabilities: number[]
   ): number[] {
-    const totalProbability = probabilities.reduce(
-      (total, probability) => total + probability,
-      0
-    );
+    let totalProbability = 0;
+
+    for (const probability of probabilities) {
+      totalProbability += probability;
+    }
   
     // scale both sides so they add back up to exactly 100%
     return probabilities.map(

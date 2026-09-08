@@ -263,7 +263,7 @@ export default function MonteCarloSimulator() {
               />
 
               <p className="form-text mt-n2">
-                Use the implied probability from the Analyse Bet page as a
+                Use the implied probability from the Analyse Single Bet or Parlay page as a
                 starting point, or enter your own scenario.
               </p>
 
